@@ -5,6 +5,7 @@ import {
   listarUsuarios,
   login,
   obtenerUsuario,
+  validarTokenCentralizado,
 } from '../controllers/usuarios.controller.js';
 
 import {
@@ -20,6 +21,11 @@ const router = Router();
 router.post(
   '/login',
   login
+);
+
+router.post(
+  '/auth/validar-token',
+  validarTokenCentralizado
 );
 
 router.post(

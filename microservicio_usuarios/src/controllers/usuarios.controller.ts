@@ -5,7 +5,10 @@ import type {
 
 import bcrypt from 'bcryptjs';
 
-import { generarToken } from '../service/auth.service.js';
+import {
+  generarToken,
+  verificarToken,
+} from '../service/auth.service.js';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -169,6 +172,54 @@ export const obtenerUsuario = async (
     console.error(error);
 
     res.status(500).json(error);
+
+  }
+
+};
+
+export const validarTokenCentralizado = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const token =
+      req.body.token ||
+      req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({
+        valido: false,
+        mensaje: 'Token requerido',
+      });
+    }
+
+    const decoded = verificarToken(
+      token
+    ) as any;
+
+    const usuario =
+      await obtenerUsuarioPorId(decoded.id);
+
+    if (!usuario) {
+      return res.status(401).json({
+        valido: false,
+        mensaje: 'Usuario no encontrado',
+      });
+    }
+
+    res.json({
+      valido: true,
+      usuario,
+    });
+
+  } catch (error) {
+
+    return res.status(401).json({
+      valido: false,
+      mensaje: 'Token invalido',
+    });
 
   }
 

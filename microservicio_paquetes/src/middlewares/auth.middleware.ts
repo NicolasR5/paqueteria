@@ -4,9 +4,11 @@ import type {
   NextFunction,
 } from 'express';
 
-import jwt from 'jsonwebtoken';
+const AUTH_SERVICE_URL =
+  process.env.AUTH_SERVICE_URL ||
+  'http://localhost:3001/api';
 
-export const validarToken = (
+export const validarToken = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -25,19 +27,41 @@ export const validarToken = (
 
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
+    const respuesta = await fetch(
+      `${AUTH_SERVICE_URL}/auth/validar-token`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+        }),
+      }
     );
 
-    (req as any).usuario = decoded;
+    const datos = await respuesta.json() as {
+      valido?: boolean;
+      usuario?: unknown;
+      mensaje?: string;
+    };
+
+    if (!respuesta.ok || !datos.valido || !datos.usuario) {
+
+      return res.status(401).json({
+        mensaje: datos.mensaje || 'Token invalido',
+      });
+
+    }
+
+    (req as any).usuario = datos.usuario;
 
     next();
 
   } catch (error) {
 
-    return res.status(401).json({
-      mensaje: 'Token inválido',
+    return res.status(503).json({
+      mensaje: 'No se pudo validar el token',
     });
 
   }
