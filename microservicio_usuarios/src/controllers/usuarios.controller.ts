@@ -192,9 +192,16 @@ export const validarTokenCentralizado = (
 
     const decoded = verificarToken(token);
 
+    if (!decoded.valido) {
+      return res.status(401).json({
+        valido: false,
+        mensaje: 'Token inválido',
+      });
+    }
+
     return res.json({
       valido: true,
-      usuario: decoded,
+      usuario: decoded.datos,
     });
 
   } catch (error) {
