@@ -5,7 +5,7 @@ import {
   listarUsuarios,
   login,
   obtenerUsuario,
-  validarTokenExterna,
+  validarTokenCentralizado,
 } from '../controllers/usuarios.controller.js';
 
 import {
@@ -23,7 +23,7 @@ router.post(
   login
 );
 
-router.post('/auth/validate', validarTokenExterna);
+router.post('/validate-token', validarTokenCentralizado);
 
 router.post(
   '/usuarios',

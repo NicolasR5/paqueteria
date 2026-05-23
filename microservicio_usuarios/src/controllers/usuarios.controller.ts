@@ -5,8 +5,7 @@ import type {
 
 import bcrypt from 'bcryptjs';
 
-import { generarToken } from '../service/auth.service.js';
-import { verificarToken } from '../service/auth.service.js';
+import { generarToken, verificarToken } from '../services/auth.service.js';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -175,7 +174,7 @@ export const obtenerUsuario = async (
 
 };
 
-export const validarTokenExterna = (
+export const validarTokenCentralizado = (
   req: Request,
   res: Response
 ) => {
@@ -185,18 +184,25 @@ export const validarTokenExterna = (
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-
-      return res.status(401).json({ mensaje: 'Token requerido' });
-
+      return res.status(401).json({
+        valido: false,
+        mensaje: 'Token requerido',
+      });
     }
 
     const decoded = verificarToken(token);
 
-    return res.json({ usuario: decoded });
+    return res.json({
+      valido: true,
+      usuario: decoded,
+    });
 
   } catch (error) {
 
-    return res.status(401).json({ mensaje: 'Token inválido' });
+    return res.status(401).json({
+      valido: false,
+      mensaje: 'Token inválido',
+    });
 
   }
 

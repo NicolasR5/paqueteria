@@ -22,37 +22,18 @@ export const registrarPaquete = async (
 
     const usuario = (req as any).usuario;
 
-    // CONSULTA HTTP A MS USUARIOS
-    const respuesta = await fetch(
-      `http://localhost:3001/api/usuarios/${usuario.id}`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization:
-            req.headers.authorization as string,
-        },
-      }
-    );
-
-    // VALIDAR RESPUESTA
-    if (!respuesta.ok) {
-
-      return res.status(404).json({
-        mensaje: 'Usuario no válido',
+    if (!usuario || !usuario.id) {
+      return res.status(401).json({
+        mensaje: 'Usuario inválido en token',
       });
-
     }
 
-    const usuarioValidado =
-      await respuesta.json();
-
-    // CREAR PAQUETE
     const id = uuidv4();
 
     await crearPaquete(
       id,
       descripcion,
-      usuarioValidado.id,
+      usuario.id,
       'creado'
     );
 

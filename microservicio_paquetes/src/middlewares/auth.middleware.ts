@@ -4,6 +4,8 @@ import type {
   NextFunction,
 } from 'express';
 
+import { validarTokenConServidorUsuarios } from '../utils/tokenValidator.js';
+
 export const validarToken = async (
   req: Request,
   res: Response,
@@ -12,29 +14,19 @@ export const validarToken = async (
 
   try {
 
-    const authHeader = req.headers.authorization;
+    const token = req.headers.authorization?.split(' ')[1];
 
-    if (!authHeader) {
+    if (!token) {
       return res.status(401).json({ mensaje: 'Token requerido' });
     }
 
-    const usersUrl = process.env.USERS_SERVICE_URL || 'http://localhost:3000';
+    const resultado = await validarTokenConServidorUsuarios(token);
 
-    const resp = await fetch(`${usersUrl}/auth/validate`, {
-      method: 'POST',
-      headers: {
-        Authorization: authHeader,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!resp.ok) {
-      return res.status(401).json({ mensaje: 'Token inválido' });
+    if (!resultado.valido || !resultado.usuario || !resultado.usuario.id) {
+      return res.status(401).json({ mensaje: 'Token inválido o usuario no encontrado' });
     }
 
-    const data = await resp.json();
-
-    (req as any).usuario = data.usuario;
+    (req as any).usuario = resultado.usuario;
 
     next();
 
