@@ -8,8 +8,65 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   crearPaquete,
   obtenerPaquetesUsuario,
+  obtenerPaquetePorId,
   actualizarEstadoPaquete,
 } from '../models/paquetes.model.js';
+
+const ESTADOS_VALIDOS = [
+  'creado',
+  'en_transito',
+  'entregado',
+  'devuelto',
+];
+
+const normalizarEstado = (
+  estado: unknown
+) => {
+
+  if (typeof estado !== 'string') {
+    return null;
+  }
+
+  const estadoNormalizado = estado
+    .trim()
+    .toLowerCase()
+    .replace(' ', '_')
+    .replace('á', 'a');
+
+  return ESTADOS_VALIDOS.includes(estadoNormalizado)
+    ? estadoNormalizado
+    : null;
+
+};
+
+const registrarNotificacion = async (
+  paquete_id: string,
+  usuario_dueno: string,
+  estado: string
+) => {
+
+  const respuesta = await fetch(
+    'http://localhost:3003/api/notificaciones',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        paquete_id,
+        usuario_dueno,
+        estado,
+      }),
+    }
+  );
+
+  if (!respuesta.ok) {
+    throw new Error(
+      'No se pudo crear la notificacion'
+    );
+  }
+
+};
 
 export const registrarPaquete = async (
   req: Request,
@@ -52,6 +109,12 @@ export const registrarPaquete = async (
     await crearPaquete(
       id,
       descripcion,
+      usuarioValidado.id,
+      'creado'
+    );
+
+    await registrarNotificacion(
+      id,
       usuarioValidado.id,
       'creado'
     );
@@ -116,10 +179,33 @@ export const cambiarEstado = async (
       });
     }
 
-    const { estado } = req.body;
+    const estado =
+      normalizarEstado(req.body.estado);
+
+    if (!estado) {
+      return res.status(400).json({
+        mensaje: 'Estado invalido',
+        estados_validos: ESTADOS_VALIDOS,
+      });
+    }
+
+    const paquete =
+      await obtenerPaquetePorId(id);
+
+    if (!paquete) {
+      return res.status(404).json({
+        mensaje: 'Paquete no encontrado',
+      });
+    }
 
     await actualizarEstadoPaquete(
       id,
+      estado
+    );
+
+    await registrarNotificacion(
+      id,
+      paquete.usuario_dueno,
       estado
     );
 

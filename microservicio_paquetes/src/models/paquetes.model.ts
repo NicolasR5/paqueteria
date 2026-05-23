@@ -46,6 +46,23 @@ export const obtenerPaquetesUsuario = async (
 
 };
 
+export const obtenerPaquetePorId = async (
+  id: string
+) => {
+
+  const [rows]: any = await pool.query(
+    `
+    SELECT *
+    FROM paquetes
+    WHERE id = ?
+    `,
+    [id]
+  );
+
+  return rows[0];
+
+};
+
 export const actualizarEstadoPaquete = async (
   id: string,
   estado: string
