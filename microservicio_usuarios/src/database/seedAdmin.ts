@@ -1,25 +1,35 @@
 import bcrypt from 'bcryptjs';
+
 import { v4 as uuidv4 } from 'uuid';
 
 import pool from './db.js';
 
 export const crearAdminInicial = async () => {
+
   try {
 
     const [rows]: any = await pool.query(
-      'SELECT * FROM usuarios WHERE rol = ?',
+      `
+      SELECT *
+      FROM usuarios
+      WHERE rol = ?
+      `,
       ['admin']
     );
 
     if (rows.length > 0) {
+
       console.log('Admin ya existe');
+
       return;
+
     }
 
-    const passwordHash = await bcrypt.hash(
-      process.env.ADMIN_PASSWORD as string,
-      10
-    );
+    const passwordHash =
+      await bcrypt.hash(
+        process.env.ADMIN_PASSWORD as string,
+        10
+      );
 
     await pool.query(
       `
@@ -41,9 +51,14 @@ export const crearAdminInicial = async () => {
       ]
     );
 
-    console.log('Admin creado automáticamente');
+    console.log(
+      'Admin creado automáticamente'
+    );
 
   } catch (error) {
+
     console.error(error);
+
   }
+
 };

@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken';
 
-export const generarToken = (usuario: any) => {
+export const generarToken = (
+  usuario: any
+) => {
+
   return jwt.sign(
     {
       id: usuario.id,
@@ -12,4 +15,5 @@ export const generarToken = (usuario: any) => {
       expiresIn: '1d',
     }
   );
+
 };

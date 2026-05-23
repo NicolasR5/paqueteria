@@ -4,14 +4,23 @@ import {
   registrarUsuario,
   listarUsuarios,
   login,
+  obtenerUsuario,
 } from '../controllers/usuarios.controller.js';
 
-import { validarToken } from '../middlewares/auth.middleware.js';
-import { soloAdmin } from '../middlewares/role.middleware.js';
+import {
+  validarToken,
+} from '../middlewares/auth.middleware.js';
+
+import {
+  soloAdmin,
+} from '../middlewares/role.middleware.js';
 
 const router = Router();
 
-router.post('/login', login);
+router.post(
+  '/login',
+  login
+);
 
 router.post(
   '/usuarios',
@@ -25,6 +34,12 @@ router.get(
   validarToken,
   soloAdmin,
   listarUsuarios
+);
+
+router.get(
+  '/usuarios/:id',
+  validarToken,
+  obtenerUsuario
 );
 
 export default router;

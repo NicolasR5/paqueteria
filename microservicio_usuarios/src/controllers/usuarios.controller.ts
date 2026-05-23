@@ -1,29 +1,40 @@
-import type { Request, Response } from 'express';
+import type {
+  Request,
+  Response,
+} from 'express';
+
 import bcrypt from 'bcryptjs';
+
+import { generarToken } from '../service/auth.service.js';
+
 import { v4 as uuidv4 } from 'uuid';
 
 import {
   crearUsuario,
   obtenerUsuarios,
-  buscarUsuarioPorUsername,
+  buscarUsuarioPorUsuario,
+  obtenerUsuarioPorId,
 } from '../models/usuarios.model.js';
-
-import { generarToken } from '../service/auth.service.js';
 
 export const registrarUsuario = async (
   req: Request,
   res: Response
 ) => {
+
   try {
-    const { nombre_completo, usuario, password, rol } =
-      req.body;
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const {
+      nombre_completo,
+      usuario,
+      password,
+      rol,
+    } = req.body;
 
-    const id = uuidv4();
+    const passwordHash =
+      await bcrypt.hash(password, 10);
 
     await crearUsuario(
-      id,
+      uuidv4(),
       nombre_completo,
       usuario,
       passwordHash,
@@ -33,52 +44,78 @@ export const registrarUsuario = async (
     res.status(201).json({
       mensaje: 'Usuario creado correctamente',
     });
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json(error);
+
   }
+
 };
 
 export const listarUsuarios = async (
-  _req: Request,
+  req: Request,
   res: Response
 ) => {
+
   try {
-    const usuarios = await obtenerUsuarios();
+
+    const usuarios =
+      await obtenerUsuarios();
 
     res.json(usuarios);
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json(error);
+
   }
+
 };
 
 export const login = async (
   req: Request,
   res: Response
 ) => {
+
   try {
-    const { usuario, password } = req.body;
+
+    const {
+      usuario,
+      password,
+    } = req.body;
 
     const usuarioDB =
-      await buscarUsuarioPorUsername(usuario);
+      await buscarUsuarioPorUsuario(usuario);
 
     if (!usuarioDB) {
+
       return res.status(404).json({
         mensaje: 'Usuario no encontrado',
       });
+
     }
 
-    const passwordCorrecta = await bcrypt.compare(
-      password,
-      usuarioDB.password
-    );
+    const passwordCorrecto =
+      await bcrypt.compare(
+        password,
+        usuarioDB.password
+      );
 
-    if (!passwordCorrecta) {
+    if (!passwordCorrecto) {
+
       return res.status(401).json({
-        mensaje: 'Contraseña incorrecta',
+        mensaje: 'Password incorrecto',
       });
+
     }
 
-    const token = generarToken(usuarioDB);
+    const token =
+      generarToken(usuarioDB);
 
     res.json({
       token,
@@ -88,7 +125,51 @@ export const login = async (
         rol: usuarioDB.rol,
       },
     });
+
   } catch (error) {
+
+    console.error(error);
+
     res.status(500).json(error);
+
   }
+
+};
+
+export const obtenerUsuario = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const { id } = req.params;
+
+    if (!id || Array.isArray(id)) {
+      return res.status(400).json({
+        mensaje: 'ID de usuario inválido',
+      });
+    }
+
+    const usuario =
+      await obtenerUsuarioPorId(id);
+
+    if (!usuario) {
+
+      return res.status(404).json({
+        mensaje: 'Usuario no encontrado',
+      });
+
+    }
+
+    res.json(usuario);
+
+  } catch (error) {
+
+    console.error(error);
+
+    res.status(500).json(error);
+
+  }
+
 };

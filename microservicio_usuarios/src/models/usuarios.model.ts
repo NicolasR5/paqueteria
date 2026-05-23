@@ -7,15 +7,18 @@ export const crearUsuario = async (
   password: string,
   rol: string
 ) => {
+
   const [result] = await pool.query(
-    `INSERT INTO usuarios(
+    `
+    INSERT INTO usuarios (
       id,
       nombre_completo,
       usuario,
       password,
       rol
     )
-    VALUES (?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?)
+    `,
     [
       id,
       nombre_completo,
@@ -26,23 +29,60 @@ export const crearUsuario = async (
   );
 
   return result;
+
 };
 
-export const buscarUsuarioPorUsername = async (
+export const obtenerUsuarios = async () => {
+
+  const [rows] = await pool.query(
+    `
+    SELECT
+      id,
+      nombre_completo,
+      usuario,
+      rol
+    FROM usuarios
+    `
+  );
+
+  return rows;
+
+};
+
+export const buscarUsuarioPorUsuario = async (
   usuario: string
 ) => {
+
   const [rows]: any = await pool.query(
-    'SELECT * FROM usuarios WHERE usuario = ?',
+    `
+    SELECT *
+    FROM usuarios
+    WHERE usuario = ?
+    `,
     [usuario]
   );
 
   return rows[0];
+
 };
 
-export const obtenerUsuarios = async () => {
-  const [rows] = await pool.query(
-    'SELECT id, nombre_completo, usuario, rol FROM usuarios'
+export const obtenerUsuarioPorId = async (
+  id: string
+) => {
+
+  const [rows]: any = await pool.query(
+    `
+    SELECT
+      id,
+      nombre_completo,
+      usuario,
+      rol
+    FROM usuarios
+    WHERE id = ?
+    `,
+    [id]
   );
 
-  return rows;
+  return rows[0];
+
 };
