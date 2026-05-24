@@ -24,7 +24,13 @@ export const validarToken = (
 
     const decoded = verificarToken(token);
 
-    (req as any).usuario = decoded;
+    if (!decoded.valido || !decoded.datos) {
+      return res.status(401).json({
+        mensaje: 'Token invÃ¡lido',
+      });
+    }
+
+    (req as any).usuario = decoded.datos;
 
     next();
 

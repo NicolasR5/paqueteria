@@ -19,6 +19,21 @@ Esta guía te ayudará a implementar la **validación centralizada de tokens JWT
 
 ### Resumen Ejecutivo
 
+### Estado actual aplicado en el proyecto
+
+En el estado actual del repositorio:
+
+- **Usuarios** expone `POST /api/validate-token`.
+- **Paquetes** ya valida tokens consultando a Usuarios mediante `src/utils/tokenValidator.ts`.
+- **Notificaciones** fue actualizado para usar el mismo esquema de Paquetes.
+- La variable de entorno usada por Paquetes y Notificaciones es:
+
+```env
+USERS_SERVICE_URL=http://localhost:3001
+```
+
+> Nota: `JWT_SECRET` puede seguir existiendo en Paquetes y Notificaciones por compatibilidad, pero ya no se usa para validar tokens localmente en esos servicios.
+
 **Antes:** Cada microservicio validaba JWT localmente (3 copias del mismo código).  
 **Después:** Solo **Usuarios** valida JWT. Los otros microservicios consultan a Usuarios.
 
@@ -172,7 +187,7 @@ export const validarTokenConServidorUsuarios = async (
 ) => {
   try {
     const usuariosServiceUrl =
-      process.env.USUARIOS_SERVICE_URL ||
+      process.env.USERS_SERVICE_URL ||
       'http://localhost:3001';
 
     const response = await fetch(
@@ -189,21 +204,28 @@ export const validarTokenConServidorUsuarios = async (
     if (!response.ok) {
       return {
         valido: false,
-        datos: null,
+        usuario: null,
       };
     }
 
-    const datos = await response.json();
+    const data = await response.json();
+
+    if (!data?.valido || !data?.usuario || !data.usuario.id) {
+      return {
+        valido: false,
+        usuario: null,
+      };
+    }
 
     return {
-      valido: datos.valido,
-      datos: datos.usuario,
+      valido: true,
+      usuario: data.usuario,
     };
   } catch (error) {
-    console.error('Error validando token:', error);
+    console.error('Error validando token con usuarios:', error);
     return {
       valido: false,
-      datos: null,
+      usuario: null,
     };
   }
 };
@@ -244,10 +266,11 @@ export const validarToken = async (
       });
     }
 
-    (req as any).usuario = resultado.datos;
+    (req as any).usuario = resultado.usuario;
     next();
   } catch (error) {
-    return res.status(401).json({
+    console.error('Error validating token with users service', error);
+    return res.status(500).json({
       mensaje: 'Error validando token',
     });
   }
@@ -260,6 +283,8 @@ export const validarToken = async (
 
 ### **Paso 3: Actualizar Microservicio Notificaciones**
 
+Este paso deja Notificaciones alineado con Paquetes: las rutas protegidas consultan a Usuarios para validar el token y ya no verifican el JWT localmente con `jsonwebtoken`.
+
 #### 3.1 Crear `src/utils/tokenValidator.ts`
 
 Crea este archivo (EXACTAMENTE IGUAL al de paquetes):
@@ -270,7 +295,7 @@ export const validarTokenConServidorUsuarios = async (
 ) => {
   try {
     const usuariosServiceUrl =
-      process.env.USUARIOS_SERVICE_URL ||
+      process.env.USERS_SERVICE_URL ||
       'http://localhost:3001';
 
     const response = await fetch(
@@ -287,21 +312,28 @@ export const validarTokenConServidorUsuarios = async (
     if (!response.ok) {
       return {
         valido: false,
-        datos: null,
+        usuario: null,
       };
     }
 
-    const datos = await response.json();
+    const data = await response.json();
+
+    if (!data?.valido || !data?.usuario || !data.usuario.id) {
+      return {
+        valido: false,
+        usuario: null,
+      };
+    }
 
     return {
-      valido: datos.valido,
-      datos: datos.usuario,
+      valido: true,
+      usuario: data.usuario,
     };
   } catch (error) {
-    console.error('Error validando token:', error);
+    console.error('Error validando token con usuarios:', error);
     return {
       valido: false,
-      datos: null,
+      usuario: null,
     };
   }
 };
@@ -336,16 +368,17 @@ export const validarToken = async (
 
     const resultado = await validarTokenConServidorUsuarios(token);
 
-    if (!resultado.valido) {
+    if (!resultado.valido || !resultado.usuario || !resultado.usuario.id) {
       return res.status(401).json({
         mensaje: 'Token inválido',
       });
     }
 
-    (req as any).usuario = resultado.datos;
+    (req as any).usuario = resultado.usuario;
     next();
   } catch (error) {
-    return res.status(401).json({
+    console.error('Error validating token with users service', error);
+    return res.status(500).json({
       mensaje: 'Error validando token',
     });
   }
@@ -401,7 +434,7 @@ DB_USER=root
 DB_PASSWORD=root
 DB_NAME=ms_paquetes
 JWT_SECRET=llavesupersecreta  # (Opcional - ya no se usa localmente)
-USUARIOS_SERVICE_URL=http://localhost:3001
+USERS_SERVICE_URL=http://localhost:3001
 ```
 
 ### Microservicio Notificaciones (`.env`)
@@ -415,7 +448,7 @@ DB_USER=root
 DB_PASSWORD=root
 DB_NAME=ms_notificaciones
 JWT_SECRET=llavesupersecreta  # (Opcional - ya no se usa localmente)
-USUARIOS_SERVICE_URL=http://localhost:3001
+USERS_SERVICE_URL=http://localhost:3001
 ```
 
 ### 🌐 Para Entornos de Producción
@@ -423,7 +456,7 @@ USUARIOS_SERVICE_URL=http://localhost:3001
 Cambia `localhost` por tu dominio real:
 
 ```env
-USUARIOS_SERVICE_URL=https://usuarios.tudominio.com:3001
+USERS_SERVICE_URL=https://usuarios.tudominio.com:3001
 ```
 
 ---
@@ -511,7 +544,7 @@ curl -X POST http://localhost:3002/api/paquetes \
 
 **Solución:**
 1. Verifica que usuarios esté corriendo en puerto 3001
-2. Verifica que `USUARIOS_SERVICE_URL` está correcto en `.env`
+2. Verifica que `USERS_SERVICE_URL` está correcto en `.env`
 3. Revisa la consola de usuarios por errores
 
 ```bash
@@ -520,12 +553,12 @@ curl http://localhost:3001/api/validate-token \
   -H "Authorization: Bearer <TOKEN>"
 ```
 
-### Problema: "USUARIOS_SERVICE_URL is undefined"
+### Problema: "USERS_SERVICE_URL is undefined"
 
 **Causa:** Variable de entorno no cargada.
 
 **Solución:**
-1. Agrega `USUARIOS_SERVICE_URL` al `.env`
+1. Agrega `USERS_SERVICE_URL` al `.env`
 2. Reinicia el servidor
 3. Verifica que el `.env` está en la raíz del microservicio
 
@@ -580,13 +613,13 @@ import { validarTokenConServidorUsuarios } from '../utils/tokenValidator';
 - ✅ Nuevo archivo `src/utils/tokenValidator.ts`
 - ✅ Middleware auth ahora es `async`
 - ✅ Usa `validarTokenConServidorUsuarios()` para validar
-- ✅ Agrega `USUARIOS_SERVICE_URL` al `.env`
+- ✅ Agrega `USERS_SERVICE_URL` al `.env`
 
 ### Notificaciones
 - ✅ Nuevo archivo `src/utils/tokenValidator.ts`
 - ✅ Middleware auth ahora es `async`
 - ✅ Usa `validarTokenConServidorUsuarios()` para validar
-- ✅ Agrega `USUARIOS_SERVICE_URL` al `.env`
+- ✅ Agrega `USERS_SERVICE_URL` al `.env`
 
 ---
 
@@ -596,7 +629,7 @@ import { validarTokenConServidorUsuarios } from '../utils/tokenValidator';
 
 1. **Actualiza las URLs en `.env`:**
    ```env
-   USUARIOS_SERVICE_URL=https://usuarios-prod.tudominio.com
+   USERS_SERVICE_URL=https://usuarios-prod.tudominio.com
    ```
 
 2. **Asegúrate de HTTPS:**
@@ -631,10 +664,10 @@ Si tienes dudas o problemas:
 - [ ] Modificaste `usuarios.routes.ts` en usuarios
 - [ ] Creaste `tokenValidator.ts` en paquetes
 - [ ] Reemplazaste `auth.middleware.ts` en paquetes
-- [ ] Agregaste `USUARIOS_SERVICE_URL` en `.env` de paquetes
+- [ ] Agregaste `USERS_SERVICE_URL` en `.env` de paquetes
 - [ ] Creaste `tokenValidator.ts` en notificaciones
 - [ ] Reemplazaste `auth.middleware.ts` en notificaciones
-- [ ] Agregaste `USUARIOS_SERVICE_URL` en `.env` de notificaciones
+- [ ] Agregaste `USERS_SERVICE_URL` en `.env` de notificaciones
 - [ ] Todos los microservicios compilan sin errores
 - [ ] Probaste los 4 casos de prueba principales
 - [ ] Los logs no muestran errores críticos
