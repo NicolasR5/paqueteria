@@ -4,9 +4,9 @@ import type {
   NextFunction,
 } from 'express';
 
-import jwt from 'jsonwebtoken';
+import { validarTokenConServidorUsuarios } from '../utils/tokenValidator.js';
 
-export const validarToken = (
+export const validarToken = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -14,31 +14,27 @@ export const validarToken = (
 
   try {
 
-    const token =
-      req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-
-      return res.status(401).json({
-        mensaje: 'Token requerido',
-      });
-
+      return res.status(401).json({ mensaje: 'Token requerido' });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string
-    );
+    const resultado = await validarTokenConServidorUsuarios(token);
 
-    (req as any).usuario = decoded;
+    if (!resultado.valido || !resultado.usuario || !resultado.usuario.id) {
+      return res.status(401).json({ mensaje: 'Token inválido o usuario no encontrado' });
+    }
+
+    (req as any).usuario = resultado.usuario;
 
     next();
 
   } catch (error) {
 
-    return res.status(401).json({
-      mensaje: 'Token inválido',
-    });
+    console.error('Error validating token with users service', error);
+
+    return res.status(500).json({ mensaje: 'Error validando token' });
 
   }
 
