@@ -1,3 +1,4 @@
+// Rutas de usuarios: conecta endpoints HTTP con controladores y middlewares.
 import { Router } from 'express';
 
 import {
@@ -18,13 +19,16 @@ import {
 
 const router = Router();
 
+// Login: autentica al usuario y devuelve su token.
 router.post(
   '/login',
   login
 );
 
+// Validacion centralizada: endpoint usado por otros microservicios para validar JWT.
 router.post('/validate-token', validarTokenCentralizado);
 
+// Crear usuario: solo usuarios administradores pueden registrar nuevos usuarios.
 router.post(
   '/usuarios',
   validarToken,
@@ -32,6 +36,7 @@ router.post(
   registrarUsuario
 );
 
+// Listar usuarios: solo administradores pueden ver el listado completo.
 router.get(
   '/usuarios',
   validarToken,
@@ -39,6 +44,7 @@ router.get(
   listarUsuarios
 );
 
+// Obtener usuario: devuelve la informacion de un usuario por ID.
 router.get(
   '/usuarios/:id',
   validarToken,

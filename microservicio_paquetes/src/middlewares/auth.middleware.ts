@@ -1,3 +1,4 @@
+// Middleware de autenticacion: valida tokens usando el microservicio de usuarios.
 import type {
   Request,
   Response,
@@ -6,6 +7,7 @@ import type {
 
 import { validarTokenConServidorUsuarios } from '../utils/tokenValidator.js';
 
+// Validar token: extrae el Bearer token, lo consulta y guarda el usuario en la request.
 export const validarToken = async (
   req: Request,
   res: Response,

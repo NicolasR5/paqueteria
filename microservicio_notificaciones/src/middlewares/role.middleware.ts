@@ -1,9 +1,11 @@
+// Middleware de roles: limita rutas que solo deben usar administradores.
 import type {
   Request,
   Response,
   NextFunction,
 } from 'express';
 
+// Solo admin: permite continuar unicamente si el usuario autenticado tiene rol admin.
 export const soloAdmin = (
   req: Request,
   res: Response,

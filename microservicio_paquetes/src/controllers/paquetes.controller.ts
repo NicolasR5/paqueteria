@@ -1,3 +1,4 @@
+// Importaciones: tipos de Express, generador de IDs y funciones del modelo de paquetes.
 import type {
   Request,
   Response,
@@ -12,6 +13,7 @@ import {
   actualizarEstadoPaquete,
 } from '../models/paquetes.model.js';
 
+// Estados permitidos: lista los valores validos que puede tener un paquete.
 const ESTADOS_VALIDOS = [
   'creado',
   'en_transito',
@@ -19,6 +21,7 @@ const ESTADOS_VALIDOS = [
   'devuelto',
 ];
 
+// Utilidades de validacion: limpia y verifica que el estado recibido sea permitido.
 const normalizarEstado = (
   estado: unknown
 ) => {
@@ -39,6 +42,7 @@ const normalizarEstado = (
 
 };
 
+// Comunicacion con notificaciones: crea un registro cada vez que el paquete cambia de estado.
 const registrarNotificacion = async (
   paquete_id: string,
   usuario_dueno: string,
@@ -68,6 +72,7 @@ const registrarNotificacion = async (
 
 };
 
+// Crear paquete: registra un paquete para el usuario autenticado y genera su primera notificacion.
 export const registrarPaquete = async (
   req: Request,
   res: Response
@@ -118,6 +123,7 @@ export const registrarPaquete = async (
 
 };
 
+// Listar mis paquetes: devuelve solamente los paquetes asociados al usuario autenticado.
 export const listarMisPaquetes = async (
   req: Request,
   res: Response
@@ -145,6 +151,7 @@ export const listarMisPaquetes = async (
 
 };
 
+// Cambiar estado: valida el nuevo estado, actualiza el paquete y registra la notificacion.
 export const cambiarEstado = async (
   req: Request,
   res: Response

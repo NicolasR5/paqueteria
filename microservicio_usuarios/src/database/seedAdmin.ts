@@ -1,9 +1,11 @@
+// Seed de administrador: crea un usuario admin inicial si aun no existe.
 import bcrypt from 'bcryptjs';
 
 import { v4 as uuidv4 } from 'uuid';
 
 import pool from './db.js';
 
+// Crear admin inicial: revisa la tabla y registra el admin por defecto.
 export const crearAdminInicial = async () => {
 
   try {

@@ -1,5 +1,7 @@
+// Servicio de autenticacion: genera y verifica tokens JWT para usuarios.
 import jwt from 'jsonwebtoken';
 
+// Generar token: firma los datos principales del usuario con expiracion de un dia.
 export const generarToken = (
   usuario: any
 ) => {
@@ -18,6 +20,7 @@ export const generarToken = (
 
 };
 
+// Verificar token: confirma firma y expiracion, devolviendo los datos decodificados.
 export const verificarToken = (
   token: string
 ) => {

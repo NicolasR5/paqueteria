@@ -1,3 +1,4 @@
+// Importaciones: tipos HTTP, generador de IDs y funciones del modelo.
 import type {
   Request,
   Response,
@@ -14,6 +15,7 @@ import {
   type EstadoPaquete,
 } from '../models/notificaciones.model.js';
 
+// Utilidades de validacion: limpia y verifica que el estado recibido sea permitido.
 const normalizarEstado = (
   estado: unknown
 ): EstadoPaquete | null => {
@@ -40,6 +42,7 @@ const normalizarEstado = (
 
 };
 
+// Registrar notificacion: guarda un evento asociado a un paquete y su usuario dueno.
 export const registrarNotificacion = async (
   req: Request,
   res: Response
@@ -96,6 +99,7 @@ export const registrarNotificacion = async (
 
 };
 
+// Listar mis notificaciones: devuelve notificaciones del usuario autenticado.
 export const listarMisNotificaciones = async (
   req: Request,
   res: Response
@@ -122,6 +126,7 @@ export const listarMisNotificaciones = async (
 
 };
 
+// Listar notificaciones: devuelve todo el historial disponible para administradores.
 export const listarNotificaciones = async (
   req: Request,
   res: Response
@@ -144,6 +149,7 @@ export const listarNotificaciones = async (
 
 };
 
+// Listar por paquete: devuelve el historial de notificaciones de un paquete especifico.
 export const listarNotificacionesPaquete = async (
   req: Request,
   res: Response

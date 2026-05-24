@@ -1,3 +1,4 @@
+// Importaciones: tipos HTTP, utilidades de seguridad, JWT, UUID y modelo de usuarios.
 import type {
   Request,
   Response,
@@ -16,6 +17,7 @@ import {
   obtenerUsuarioPorId,
 } from '../models/usuarios.model.js';
 
+// Registrar usuario: crea un usuario nuevo guardando la contrasena encriptada.
 export const registrarUsuario = async (
   req: Request,
   res: Response
@@ -55,6 +57,7 @@ export const registrarUsuario = async (
 
 };
 
+// Listar usuarios: devuelve los usuarios registrados sin exponer sus contrasenas.
 export const listarUsuarios = async (
   req: Request,
   res: Response
@@ -77,6 +80,7 @@ export const listarUsuarios = async (
 
 };
 
+// Login: valida credenciales y entrega un token JWT al usuario autenticado.
 export const login = async (
   req: Request,
   res: Response
@@ -136,6 +140,7 @@ export const login = async (
 
 };
 
+// Obtener usuario: busca un usuario especifico usando el ID recibido por parametro.
 export const obtenerUsuario = async (
   req: Request,
   res: Response
@@ -174,6 +179,7 @@ export const obtenerUsuario = async (
 
 };
 
+// Validar token centralizado: permite que otros microservicios confirmen un JWT.
 export const validarTokenCentralizado = (
   req: Request,
   res: Response

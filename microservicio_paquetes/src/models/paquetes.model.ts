@@ -1,5 +1,7 @@
+// Conexion a base de datos: reutiliza el pool configurado para ejecutar consultas.
 import pool from '../database/db.js';
 
+// Crear paquete: inserta un paquete nuevo con su usuario dueno y estado inicial.
 export const crearPaquete = async (
   id: string,
   descripcion: string,
@@ -29,6 +31,7 @@ export const crearPaquete = async (
 
 };
 
+// Obtener paquetes de usuario: lista los paquetes asociados a un dueno especifico.
 export const obtenerPaquetesUsuario = async (
   usuario_dueno: string
 ) => {
@@ -46,6 +49,7 @@ export const obtenerPaquetesUsuario = async (
 
 };
 
+// Obtener paquete por ID: busca un paquete concreto para validar o actualizarlo.
 export const obtenerPaquetePorId = async (
   id: string
 ) => {
@@ -63,6 +67,7 @@ export const obtenerPaquetePorId = async (
 
 };
 
+// Actualizar estado: modifica el estado actual de un paquete existente.
 export const actualizarEstadoPaquete = async (
   id: string,
   estado: string

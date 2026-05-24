@@ -1,3 +1,4 @@
+// Arranque del servidor: carga variables de entorno e importa la app.
 import dotenv from 'dotenv';
 
 import app from './app.js';
@@ -8,9 +9,11 @@ import {
 
 dotenv.config();
 
+// Puerto del servicio: usa el valor del entorno o el puerto local por defecto.
 const PORT =
   process.env.PORT || 3001;
 
+// Inicio del microservicio: levanta Express y asegura un administrador inicial.
 app.listen(PORT, async () => {
 
   console.log(

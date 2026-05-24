@@ -1,11 +1,14 @@
+// Conexion a base de datos: reutiliza el pool configurado para ejecutar consultas.
 import pool from '../database/db.js';
 
+// Tipo de estado: define los valores validos para el estado de un paquete.
 export type EstadoPaquete =
   | 'creado'
   | 'en_transito'
   | 'entregado'
   | 'devuelto';
 
+// Estados permitidos: lista centralizada usada para validar entradas.
 export const ESTADOS_VALIDOS: EstadoPaquete[] = [
   'creado',
   'en_transito',
@@ -13,6 +16,7 @@ export const ESTADOS_VALIDOS: EstadoPaquete[] = [
   'devuelto',
 ];
 
+// Crear notificacion: inserta un registro en el historial de notificaciones.
 export const crearNotificacion = async (
   id: string,
   paquete_id: string,
@@ -42,6 +46,7 @@ export const crearNotificacion = async (
 
 };
 
+// Obtener notificaciones: lista todo el historial ordenado por fecha.
 export const obtenerNotificaciones = async () => {
 
   const [rows] = await pool.query(
@@ -56,6 +61,7 @@ export const obtenerNotificaciones = async () => {
 
 };
 
+// Obtener por usuario: lista notificaciones asociadas a un dueno especifico.
 export const obtenerNotificacionesUsuario = async (
   usuario_dueno: string
 ) => {
@@ -74,6 +80,7 @@ export const obtenerNotificacionesUsuario = async (
 
 };
 
+// Obtener por paquete: lista notificaciones de un paquete especifico.
 export const obtenerNotificacionesPaquete = async (
   paquete_id: string
 ) => {

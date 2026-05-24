@@ -1,5 +1,7 @@
+// Conexion a base de datos: reutiliza el pool configurado para ejecutar consultas.
 import pool from '../database/db.js';
 
+// Crear usuario: inserta un nuevo registro en la tabla usuarios.
 export const crearUsuario = async (
   id: string,
   nombre_completo: string,
@@ -32,6 +34,7 @@ export const crearUsuario = async (
 
 };
 
+// Obtener usuarios: lista datos publicos de todos los usuarios registrados.
 export const obtenerUsuarios = async () => {
 
   const [rows] = await pool.query(
@@ -49,6 +52,7 @@ export const obtenerUsuarios = async () => {
 
 };
 
+// Buscar por usuario: obtiene un usuario completo para procesos como login.
 export const buscarUsuarioPorUsuario = async (
   usuario: string
 ) => {
@@ -66,6 +70,7 @@ export const buscarUsuarioPorUsuario = async (
 
 };
 
+// Obtener por ID: consulta datos publicos de un usuario especifico.
 export const obtenerUsuarioPorId = async (
   id: string
 ) => {
