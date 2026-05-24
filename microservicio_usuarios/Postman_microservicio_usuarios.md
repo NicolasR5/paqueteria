@@ -47,7 +47,7 @@
   "nombre_completo": "Usuario Prueba",
   "usuario": "usuarioPrueba",
   "password": "pass1234",
-  "rol": "user"
+  "rol": "cliente"
 }
 ```
 - Tests:
